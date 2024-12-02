@@ -12,6 +12,7 @@ const RECONNECT_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 // Threshold distance to trigger notification
 const THRESHOLD_DISTANCE = 21;
+const THRESHOLD_RESET = 40;
 
 const WS_HEADERS = {
     'Upgrade': 'websocket',
@@ -62,7 +63,7 @@ async function sendNotificationToHomePod(message) {
 
 // Placeholder notification method
 async function notifyDistanceBelowThreshold(distance) {
-    const message = `Attention, please get prepared to descend.`;
+    const message = `Attention, please get prepared for descending.`;
     console.log('Sending notification:', message);
     // await sendNotificationToHomePod(message);
     speak(message);
@@ -161,6 +162,10 @@ function connectWebSocket() {
                     if (!notificationTriggered && distance < THRESHOLD_DISTANCE) {
                         notifyDistanceBelowThreshold(distance);
                         notificationTriggered = true;
+                    }
+
+                    if (notificationTriggered && distance > THRESHOLD_RESET) {
+                        notificationTriggered = false;
                     }
                 }
             }
