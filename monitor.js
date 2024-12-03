@@ -1,14 +1,13 @@
 const WebSocket = require('ws');
 const { JSDOM } = require("jsdom");
-const axios = require('axios');
-const { exec } = require('child_process');
+const loudness = require('loudness');
+const player = require('play-sound')();
+const path = require('path');
 
 // WebSocket server URL
 const SERVER_URL = 'ws://192.168.110.93:8083/graphql';
-const HA_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIzMjU3MzZmODNhYzA0ODMxYmM2MzJmMmJkZmE5NWFkNCIsImlhdCI6MTczMzEzMzgzNiwiZXhwIjoyMDQ4NDkzODM2fQ.K22l3sQdaNB5xbUZn6Y5-V_Tsx8UJIUSbNhCN6_Ar28';
-const HA_URL = 'http://192.168.110.11:8123/api/services/tts/cloud_say';
-const HA_DEVICE = 'media_player.ke_ting';
 const RECONNECT_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const ALERT_VOLUME = 36;
 
 // Threshold distance to trigger notification
 const THRESHOLD_DISTANCE = 21;
@@ -30,43 +29,21 @@ const WS_HEADERS = {
 // Variable to track whether notification has already been triggered
 let notificationTriggered = false;
 
-function speak(message) {
-    const command = `say "${message}"`;
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.error('Error speaking:', error);
-        }
-    });
-}
-
-// not using this now, as it will interrupt the music playing on HomePod and remove the HomePod from its group
-async function sendNotificationToHomePod(message) {
-    try {
-        const response = await axios.post(
-            HA_URL,
-            {
-                entity_id: HA_DEVICE, // Replace with your HomePod entity ID
-                message: message,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${HA_TOKEN}`,
-                    'Content-Type': 'application/json',
-                },
-            }
-        );
-        console.log('Notification sent to HomePod:', response.data);
-    } catch (err) {
-        console.error('Error sending notification to HomePod:', err);
-    }
-}
-
-// Placeholder notification method
 async function notifyDistanceBelowThreshold(distance) {
-    const message = `Attention, please get prepared for descending.`;
-    console.log('Sending notification:', message);
-    // await sendNotificationToHomePod(message);
-    speak(message);
+    const soundFilePath = path.join(__dirname, 'alert.mp3'); // Replace with your sound file
+    try {
+        await loudness.setVolume(ALERT_VOLUME);
+        // Play the notification sound
+        player.play(soundFilePath, (err) => {
+            if (err) {
+                console.error('Error playing sound file:', err);
+            } else {
+                console.log('Notification sound played.');
+            }
+        });
+    } catch (err) {
+        console.error('Error in notification method:', err);
+    }
 }
 
 // Parse MCDU display data
