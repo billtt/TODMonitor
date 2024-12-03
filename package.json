@@ -3,6 +3,7 @@
     "axios": "^1.7.8",
     "jsdom": "^25.0.1",
     "loudness": "^0.4.2",
+    "node-wav-player": "^1.0.0",
     "play-sound": "^1.1.6",
     "ws": "^8.18.0"
   }

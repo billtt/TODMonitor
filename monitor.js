@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const { JSDOM } = require("jsdom");
 const loudness = require('loudness');
-const player = require('play-sound')();
+const wavPlayer = require('node-wav-player');
 const path = require('path');
 
 // WebSocket server URL
@@ -30,16 +30,16 @@ const WS_HEADERS = {
 let notificationTriggered = false;
 
 async function notifyDistanceBelowThreshold(distance) {
-    const soundFilePath = path.join(__dirname, 'alert.mp3'); // Replace with your sound file
+    const soundFilePath = path.join(__dirname, 'alert.wav'); // Replace with your sound file
     try {
         await loudness.setVolume(ALERT_VOLUME);
         // Play the notification sound
-        player.play(soundFilePath, (err) => {
-            if (err) {
-                console.error('Error playing sound file:', err);
-            } else {
-                console.log('Notification sound played.');
-            }
+        wavPlayer.play({
+            path: soundFilePath,
+        }).then(() => {
+            console.log('Notification sound playback completed.');
+        }).catch((err) => {
+            console.error('Error playing sound file:', err);
         });
     } catch (err) {
         console.error('Error in notification method:', err);
@@ -162,6 +162,9 @@ function connectWebSocket() {
         setTimeout(connectWebSocket, RECONNECT_INTERVAL);
     });
 }
+
+// test notification
+//notifyDistanceBelowThreshold(20);
 
 // Start the WebSocket connection
 connectWebSocket();
