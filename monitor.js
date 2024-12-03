@@ -56,13 +56,16 @@ function parseMCDUData(value) {
         // Get all <line> elements
         const lines = Array.from(root.getElementsByTagName("line"));
 
-        for (let i = 0; i < lines.length; i++) {
+        for (let i = 1; i < lines.length-1; i++) {
+            const prevLine = lines[i - 1]?.textContent.trim();
             const currentLine = lines[i].textContent.trim();
+            const nextLine = lines[i + 1]?.textContent.trim();
 
             // Look for the line containing DIST
-            if (currentLine.includes("DIST") && i + 1 < lines.length) {
+            if (prevLine && prevLine.includes('(T/D)')
+                && currentLine.includes("DIST")
+                && nextLine) {
                 // Get the next line and extract the distance value
-                const nextLine = lines[i + 1].textContent.trim();
                 const match = nextLine.match(/(\d+)w/);
                 if (match) {
                     return parseInt(match[1], 10);
